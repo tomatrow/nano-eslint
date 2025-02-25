@@ -1,0 +1,16 @@
+{
+	"identifier": "org.nano-eslint",
+	"name": "nano-eslint",
+	"organization": "AJ Caldwell",
+	"description": "Barely abstracted eslint",
+	"version": "0.1",
+	"categories": ["issues"],
+	"main": "main.js",
+	"activationEvents": ["*"],
+	"entitlements": {
+		"process": true,
+		"clipboard": false,
+		"requests": false,
+		"filesystem": "readonly"
+	}
+}
