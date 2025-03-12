@@ -9,6 +9,11 @@ const ESLINT_CONFIG_FILENAMES = [
 	"eslint.config.cts"
 ]
 
+/**
+ * @param {string} executablePath
+ * @param {ConstructorParameters<typeof Process>[1]} options
+ * @returns {Promise<{ code: number; stdout: string; stderr: string }>}
+ */
 async function runAsync(executablePath, options) {
 	return new Promise(resolve => {
 		const process = new Process(executablePath, options)
@@ -24,7 +29,11 @@ async function runAsync(executablePath, options) {
 	})
 }
 
-const getClosestEslintConfig = dirname => {
+/**
+ * @param {string} dirname
+ * @returns {string | undefined} path of closest eslint config
+ */
+function getClosestEslintConfig(dirname) {
 	let i = 0
 
 	while (true) {
@@ -42,6 +51,10 @@ const getClosestEslintConfig = dirname => {
 	}
 }
 
+/**
+ * @param {string} configpath
+ * @param {string} filepath
+ */
 async function lint(configpath, filepath) {
 	const executablePath = ESLINT_PATH
 	const shell = SHELL_PATH
@@ -58,6 +71,10 @@ async function lint(configpath, filepath) {
 	return JSON.parse(stdout)
 }
 
+/**
+ * @param {TextEditor} editor
+ * @returns {Promise<Issue[]>} issues
+ */
 async function maybeLint(editor) {
 	try {
 		const filepath = editor.document.path
