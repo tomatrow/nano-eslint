@@ -79,6 +79,7 @@ async function lint(configpath, filepath) {
 async function maybeLint(editor) {
 	try {
 		const filepath = editor.document.path
+		if (!filepath) return []
 
 		const configpath = getClosestEslintConfig(nova.path.dirname(filepath))
 		if (!configpath) return []
