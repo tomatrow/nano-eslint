@@ -1,5 +1,3 @@
-const ESLINT_PATH = "/opt/homebrew/bin/eslint"
-const SHELL_PATH = "/opt/homebrew/bin/fish"
 const ESLINT_CONFIG_FILENAMES = [
 	"eslint.config.js",
 	"eslint.config.mjs",
@@ -56,8 +54,11 @@ function getClosestEslintConfig(dirname) {
  * @param {string} filepath
  */
 async function lint(configpath, filepath) {
-	const executablePath = ESLINT_PATH
-	const shell = SHELL_PATH
+	/** @type {string} */
+	const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
+	/** @type {string} */
+	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
+
 	const cwd = nova.path.dirname(configpath)
 	const args = ["--format", "json", filepath]
 	const options = { args, cwd, shell }

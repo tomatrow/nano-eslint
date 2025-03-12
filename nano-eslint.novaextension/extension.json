@@ -12,5 +12,21 @@
 		"clipboard": false,
 		"requests": false,
 		"filesystem": "readonly"
-	}
+	},
+	"config": [
+		{
+			"key": "org.nano-eslint.eslint_path",
+			"title": "ESLint Filepath",
+			"description": "Filepath to ESLint executable.",
+			"type": "path",
+			"default": "/opt/homebrew/bin/eslint"
+		},
+		{
+			"key": "org.nano-eslint.shell_path",
+			"title": "Shell Filepath",
+			"description": "Filepath to shell that will run ESLint.",
+			"type": "path",
+			"default": "/bin/zsh"
+		}
+	]
 }
