@@ -1,10 +1,12 @@
 {
-	"identifier": "org.nano-eslint",
-	"name": "nano-eslint",
+	"identifier": "com.tomatrow.nano-eslit",
+	"name": "nESLint",
 	"organization": "AJ Caldwell",
-	"description": "Barely abstracted eslint",
+	"description": "Barely abstracted ESLint",
 	"version": "0.1",
 	"categories": ["issues"],
+	"repository": "https://github.com/tomatrow/nano-eslint",
+	"bugs": "https://github.com/tomatrow/nano-eslint/issues",
 	"main": "main.js",
 	"activationEvents": ["*"],
 	"entitlements": {
