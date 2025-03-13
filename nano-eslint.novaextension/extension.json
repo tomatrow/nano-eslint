@@ -1,5 +1,5 @@
 {
-	"identifier": "com.tomatrow.nano-eslit",
+	"identifier": "com.tomatrow.nano-eslint",
 	"name": "nESLint",
 	"organization": "AJ Caldwell",
 	"description": "Barely abstracted ESLint",
