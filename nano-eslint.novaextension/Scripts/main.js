@@ -41,7 +41,8 @@ function getClosestEslintConfig(dirname) {
 			const configPath = nova.path.join(configRoot, configFileName)
 
 			if (nova.fs.stat(configPath)) return nova.path.normalize(configPath)
-			else if (configRoot === "/") return // we hit top-level directory
+			else if (configRoot === "/")
+				return // we hit top-level directory
 			else if (i > 100) return // too many iterations
 		}
 
