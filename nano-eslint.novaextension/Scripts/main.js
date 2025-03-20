@@ -1,4 +1,4 @@
-const ESLINT_CONFIG_FILENAMES = [
+const DEFAULT_ESLINT_CONFIG_FILENAMES = [
 	"eslint.config.js",
 	"eslint.config.mjs",
 	"eslint.config.cjs",
@@ -29,21 +29,24 @@ async function runAsync(executablePath, options) {
 
 /**
  * @param {string} dirname
+ * @param {string[]} eslintConfigFilenames
  * @returns {string | undefined} path of closest eslint config
  */
-function getClosestEslintConfig(dirname) {
+function getClosestEslintConfig(dirname, eslintConfigFilenames) {
 	let i = 0
 
 	while (true) {
 		const configRoot = nova.path.join(dirname, "../".repeat(i))
 
-		for (const configFileName of ESLINT_CONFIG_FILENAMES) {
+		for (const configFileName of eslintConfigFilenames) {
 			const configPath = nova.path.join(configRoot, configFileName)
 
 			if (nova.fs.stat(configPath)) return nova.path.normalize(configPath)
-			else if (configRoot === "/") return // we hit top-level directory
-			else if (i > 100) return // too many iterations
 		}
+
+		if (configRoot === "/")
+			return // we hit top-level directory
+		else if (i > 100) return // too many iterations
 
 		i++
 	}
@@ -60,7 +63,7 @@ async function lint(configpath, filepath) {
 	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
 
 	const cwd = nova.path.dirname(configpath)
-	const args = ["--format", "json", filepath]
+	const args = ["--config", configpath, "--format", "json", filepath]
 	const options = { args, cwd, shell }
 
 	console.info(`Running Lint Command: '${executablePath} ${args.join(" ")}'`)
@@ -81,7 +84,14 @@ async function maybeLint(editor) {
 		const filepath = editor.document.path
 		if (!filepath) return []
 
-		const configpath = getClosestEslintConfig(nova.path.dirname(filepath))
+		const eslintConfigFileNames = (
+			nova.config.get("org.nano-eslint.config_names", "array") ?? []
+		).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
+
+		const configpath = getClosestEslintConfig(
+			nova.path.dirname(filepath),
+			eslintConfigFileNames
+		)
 		if (!configpath) return []
 
 		const lintingResult = await lint(configpath, filepath)

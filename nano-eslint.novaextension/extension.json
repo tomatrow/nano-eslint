@@ -3,7 +3,7 @@
 	"name": "nESLint",
 	"organization": "AJ Caldwell",
 	"description": "Barely abstracted ESLint",
-	"version": "0.1",
+	"version": "0.2",
 	"categories": ["issues"],
 	"repository": "https://github.com/tomatrow/nano-eslint",
 	"bugs": "https://github.com/tomatrow/nano-eslint/issues",
@@ -29,6 +29,12 @@
 			"description": "Filepath to shell that will run ESLint.",
 			"type": "path",
 			"default": "/bin/zsh"
+		},
+		{
+			"key": "org.nano-eslint.config_names",
+			"title": "Config File Names",
+			"description": "ESLint config file names to look for.\n\nAdding config file names here will take precedence over the default order.\n\nDefault order is:\n\n\"eslint.config.js\"\n\"eslint.config.mjs\"\n\"eslint.config.cjs\"\n\"eslint.config.ts\"\n\"eslint.config.mts\"\n\"eslint.config.cts\"",
+			"type": "stringArray"
 		}
 	]
 }
