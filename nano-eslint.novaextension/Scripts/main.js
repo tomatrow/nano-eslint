@@ -120,3 +120,33 @@ async function maybeLint(editor) {
 }
 
 nova.assistants.registerIssueAssistant("*", { provideIssues: maybeLint })
+
+nova.workspace.onDidAddTextEditor((editor) => {
+	const shouldFix = nova.config.get("org.nano-eslint.fix_on_save", "boolean") ?? false
+	if (!shouldFix) return
+
+	editor.onDidSave(async () => {
+		const filepath = editor.document.path
+		if (!filepath) return
+
+		const eslintConfigFileNames = (
+			nova.config.get("org.nano-eslint.config_names", "array") ?? []
+		).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
+
+		const configpath = getClosestEslintConfig(
+			nova.path.dirname(filepath),
+			eslintConfigFileNames
+		)
+		if (!configpath) return
+
+		const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
+		const shell = nova.config.get("org.nano-eslint.shell_path", "string")
+		const cwd = nova.path.dirname(configpath)
+		const args = ["--config", configpath, "--fix", filepath]
+		const options = { args, cwd, shell }
+
+		console.info(`Fixing on Save: '${executablePath} ${args.join(" ")}'`)
+		const result = await runAsync(executablePath, options)
+		if (result.stderr) console.error(result.stderr)
+	})
+})

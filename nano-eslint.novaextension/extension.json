@@ -17,6 +17,12 @@
 	},
 	"config": [
 		{
+			"key": "org.nano-eslint.fix_on_save",
+			"title": "Fix on Save",
+			"description": "Automatically apply ESLint fixes on file save.",
+			"type": "boolean",
+		},
+		{
 			"key": "org.nano-eslint.eslint_path",
 			"title": "ESLint Filepath",
 			"description": "Filepath to ESLint executable.",
