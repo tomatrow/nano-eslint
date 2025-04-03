@@ -125,7 +125,7 @@ nova.workspace.onDidAddTextEditor((editor) => {
 	const shouldFix = nova.config.get("org.nano-eslint.fix_on_save", "boolean") ?? false
 	if (!shouldFix) return
 
-	editor.onDidSave(async () => {
+	editor.onWillSave(async () => {
 		const filepath = editor.document.path
 		if (!filepath) return
 
@@ -142,11 +142,30 @@ nova.workspace.onDidAddTextEditor((editor) => {
 		const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
 		const shell = nova.config.get("org.nano-eslint.shell_path", "string")
 		const cwd = nova.path.dirname(configpath)
-		const args = ["--config", configpath, "--fix", filepath]
+
+		const args = [
+			"--config",
+			configpath,
+			filepath,
+			"--fix-dry-run",
+			"--format",
+			"json",
+		]
 		const options = { args, cwd, shell }
 
-		console.info(`Fixing on Save: '${executablePath} ${args.join(" ")}'`)
 		const result = await runAsync(executablePath, options)
 		if (result.stderr) console.error(result.stderr)
+
+		const output = JSON.parse(result.stdout)?.[0]?.output
+		if (!output) return
+
+		const fullRange = new Range(0, editor.document.length)
+		const currentText = editor.document.getTextInRange(fullRange)
+
+		if (currentText === output) return
+
+		editor.edit((edit) => {
+			edit.replace(fullRange, output)
+		})
 	})
 })
