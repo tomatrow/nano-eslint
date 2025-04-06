@@ -11,7 +11,11 @@ So, this is nESLint.
 
 ## Configuration
 
+- Fix on save
+    - Run `eslint --fix` if enabled
 - ESLint Filepath
     - location of ESLint executable
 - Shell Filepath
     - location of shell to run ESLint
+- Config File Names
+    - ESLint config file names to look for
