@@ -3,7 +3,7 @@
 	"name": "nESLint",
 	"organization": "AJ Caldwell",
 	"description": "Barely abstracted ESLint",
-	"version": "0.2",
+	"version": "0.3",
 	"categories": ["issues"],
 	"repository": "https://github.com/tomatrow/nano-eslint",
 	"bugs": "https://github.com/tomatrow/nano-eslint/issues",
@@ -16,6 +16,12 @@
 		"filesystem": "readonly"
 	},
 	"config": [
+		{
+			"key": "org.nano-eslint.fix_on_save",
+			"title": "Fix on Save",
+			"description": "Automatically apply ESLint fixes on file save.",
+			"type": "boolean"
+		},
 		{
 			"key": "org.nano-eslint.eslint_path",
 			"title": "ESLint Filepath",
