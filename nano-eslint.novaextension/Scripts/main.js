@@ -119,53 +119,48 @@ async function maybeLint(editor) {
 	}
 }
 
+/** @param {TextEditor} editor */
+async function maybeFix(editor) {
+	const filepath = editor.document.path
+	if (!filepath) return
+
+	const eslintConfigFileNames = (
+		nova.config.get("org.nano-eslint.config_names", "array") ?? []
+	).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
+
+	const configpath = getClosestEslintConfig(nova.path.dirname(filepath), eslintConfigFileNames)
+	if (!configpath) return
+
+	const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
+	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
+	const cwd = nova.path.dirname(configpath)
+
+	const args = ["--config", configpath, filepath, "--fix-dry-run", "--format", "json"]
+	const options = { args, cwd, shell }
+
+	const result = await runAsync(executablePath, options)
+	if (result.stderr) console.error(result.stderr)
+
+	const output = JSON.parse(result.stdout)?.[0]?.output
+	if (!output) return
+
+	const fullRange = new Range(0, editor.document.length)
+	const currentText = editor.document.getTextInRange(fullRange)
+
+	if (currentText === output) return
+
+	await editor.edit(edit => {
+		edit.replace(fullRange, output)
+	})
+}
+
 nova.assistants.registerIssueAssistant("*", { provideIssues: maybeLint })
 
-nova.workspace.onDidAddTextEditor((editor) => {
+nova.workspace.onDidAddTextEditor(editor => {
 	const shouldFix = nova.config.get("org.nano-eslint.fix_on_save", "boolean") ?? false
 	if (!shouldFix) return
 
-	editor.onWillSave(async () => {
-		const filepath = editor.document.path
-		if (!filepath) return
-
-		const eslintConfigFileNames = (
-			nova.config.get("org.nano-eslint.config_names", "array") ?? []
-		).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
-
-		const configpath = getClosestEslintConfig(
-			nova.path.dirname(filepath),
-			eslintConfigFileNames
-		)
-		if (!configpath) return
-
-		const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
-		const shell = nova.config.get("org.nano-eslint.shell_path", "string")
-		const cwd = nova.path.dirname(configpath)
-
-		const args = [
-			"--config",
-			configpath,
-			filepath,
-			"--fix-dry-run",
-			"--format",
-			"json",
-		]
-		const options = { args, cwd, shell }
-
-		const result = await runAsync(executablePath, options)
-		if (result.stderr) console.error(result.stderr)
-
-		const output = JSON.parse(result.stdout)?.[0]?.output
-		if (!output) return
-
-		const fullRange = new Range(0, editor.document.length)
-		const currentText = editor.document.getTextInRange(fullRange)
-
-		if (currentText === output) return
-
-		editor.edit((edit) => {
-			edit.replace(fullRange, output)
-		})
+	editor.onWillSave(() => {
+		maybeFix().catch(error => console.error(error))
 	})
 })
