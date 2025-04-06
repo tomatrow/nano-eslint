@@ -161,6 +161,6 @@ nova.workspace.onDidAddTextEditor(editor => {
 	if (!shouldFix) return
 
 	editor.onWillSave(() => {
-		maybeFix().catch(error => console.error(error))
+		maybeFix(editor).catch(error => console.error(error))
 	})
 })
