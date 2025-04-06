@@ -8,4 +8,4 @@
 
 ## Version 0.3
 
-- add eslint fix option
+- add eslint fix option (@StirStudios)
