@@ -82,7 +82,7 @@ async function lint(configpath, filepath) {
 async function maybeLint(editor) {
 	try {
 		const filepath = editor.document.path
-		if (!filepath) return []
+		if (!filepath || !filepath.match(/\.(js|ts|vue|mjs|cjs|mts|cts)$/)) return
 
 		const eslintConfigFileNames = (
 			nova.config.get("org.nano-eslint.config_names", "array") ?? []
