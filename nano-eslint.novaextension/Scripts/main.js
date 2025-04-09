@@ -82,7 +82,7 @@ async function lint(configpath, filepath) {
 async function maybeLint(editor) {
 	try {
 		const filepath = editor.document.path
-		if (!filepath || !filepath.match(/\.(js|ts|vue|mjs|cjs|mts|cts)$/)) return
+		if (!filepath) return []
 
 		const eslintConfigFileNames = (
 			nova.config.get("org.nano-eslint.config_names", "array") ?? []
@@ -97,21 +97,29 @@ async function maybeLint(editor) {
 		const lintingResult = await lint(configpath, filepath)
 
 		return (
-			lintingResult[0]?.messages.map(message => {
-				const issue = new Issue()
+			lintingResult[0]?.messages
+				.map(message => {
+					const issue = new Issue()
 
-				if (message.severity === 0) issue.severity = IssueSeverity.Info
-				else if (message.severity === 1) issue.severity = IssueSeverity.Warning
-				else if (message.severity === 2) issue.severity = IssueSeverity.Error
+					if (message.severity === 0) issue.severity = IssueSeverity.Info
+					else if (message.severity === 1) issue.severity = IssueSeverity.Warning
+					else if (message.severity === 2) issue.severity = IssueSeverity.Error
 
-				issue.message = message.message
-				issue.line = message.line
-				issue.column = message.column
-				issue.endLine = message.endLine
-				issue.endColumn = message.endColumn
+					if (
+						issue.severity === IssueSeverity.Warning &&
+						issue.message.match(/^File ignored\b/)
+					)
+						return
 
-				return issue
-			}) ?? []
+					issue.message = message.message
+					issue.line = message.line
+					issue.column = message.column
+					issue.endLine = message.endLine
+					issue.endColumn = message.endColumn
+
+					return issue
+				})
+				.filter(Boolean) ?? []
 		)
 	} catch (error) {
 		console.error(error)
