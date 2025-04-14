@@ -3,7 +3,7 @@
 	"name": "nESLint",
 	"organization": "AJ Caldwell",
 	"description": "Barely abstracted ESLint",
-	"version": "0.3",
+	"version": "0.4",
 	"categories": ["issues"],
 	"repository": "https://github.com/tomatrow/nano-eslint",
 	"bugs": "https://github.com/tomatrow/nano-eslint/issues",
