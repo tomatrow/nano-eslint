@@ -130,14 +130,14 @@ async function maybeLint(editor) {
 /** @param {TextEditor} editor */
 async function maybeFix(editor) {
 	const filepath = editor.document.path
-	if (!filepath) return
+	if (!filepath) return false
 
 	const eslintConfigFileNames = (
 		nova.config.get("org.nano-eslint.config_names", "array") ?? []
 	).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
 
 	const configpath = getClosestEslintConfig(nova.path.dirname(filepath), eslintConfigFileNames)
-	if (!configpath) return
+	if (!configpath) return false
 
 	const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
 	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
@@ -150,16 +150,18 @@ async function maybeFix(editor) {
 	if (result.stderr) console.error(result.stderr)
 
 	const output = JSON.parse(result.stdout)?.[0]?.output
-	if (!output) return
+	if (!output) return false
 
 	const fullRange = new Range(0, editor.document.length)
 	const currentText = editor.document.getTextInRange(fullRange)
 
-	if (currentText === output) return
+	if (currentText === output) return false
 
 	await editor.edit(edit => {
 		edit.replace(fullRange, output)
 	})
+
+	return true
 }
 
 nova.assistants.registerIssueAssistant("*", { provideIssues: maybeLint })
@@ -169,6 +171,13 @@ nova.workspace.onDidAddTextEditor(editor => {
 	if (!shouldFix) return
 
 	editor.onWillSave(() => {
-		maybeFix(editor).catch(error => console.error(error))
+		maybeFix(editor)
+			.then(didChange => {
+				if (didChange) {
+					// Wait a tick so Nova finishes current save before re-saving
+					setTimeout(() => editor.save(), 10)
+				}
+			})
+			.catch(error => console.error(error))
 	})
 })
