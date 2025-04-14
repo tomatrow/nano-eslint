@@ -9,3 +9,8 @@
 ## Version 0.3
 
 - add eslint fix option (@StirStudios)
+
+## Version 0.4
+
+- fix double save when fix option is enabled (@StirStudios)
+- avoid excessive warnings (@StirStudios)
