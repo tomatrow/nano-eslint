@@ -1,3 +1,5 @@
+/** @typedef {import('@types/eslint').ESLint.LintResult} LintResult */
+
 const DEFAULT_ESLINT_CONFIG_FILENAMES = [
 	"eslint.config.js",
 	"eslint.config.mjs",
@@ -55,6 +57,7 @@ function getClosestEslintConfig(dirname, eslintConfigFilenames) {
 /**
  * @param {string} configpath
  * @param {string} filepath
+ * @returns {Promise<LintResult[]>}
  */
 async function lint(configpath, filepath) {
 	/** @type {string} */
@@ -105,17 +108,17 @@ async function maybeLint(editor) {
 					else if (message.severity === 1) issue.severity = IssueSeverity.Warning
 					else if (message.severity === 2) issue.severity = IssueSeverity.Error
 
-					if (
-						issue.severity === IssueSeverity.Warning &&
-						issue.message.match(/^File ignored\b/)
-					)
-						return
-
 					issue.message = message.message
 					issue.line = message.line
 					issue.column = message.column
 					issue.endLine = message.endLine
 					issue.endColumn = message.endColumn
+
+					if (
+						issue.severity === IssueSeverity.Warning &&
+						issue.message.match(/^File ignored\b/)
+					)
+						return
 
 					return issue
 				})

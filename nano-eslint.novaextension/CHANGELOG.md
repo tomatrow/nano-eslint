@@ -14,3 +14,7 @@
 
 - fix double save when fix option is enabled (@StirStudios)
 - avoid excessive warnings (@StirStudios)
+
+## Version 0.4.1
+
+- fix complete absence of warnings

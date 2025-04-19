@@ -9,6 +9,7 @@
 	"license": "ISC",
 	"packageManager": "pnpm@9.14.4",
 	"devDependencies": {
+		"@types/eslint": "^9.6.1",
 		"@types/nova-editor": "^1.0.3",
 		"eslint": "^9.22.0",
 		"eslint-plugin-nova": "^1.7.0",
