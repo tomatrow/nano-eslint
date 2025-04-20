@@ -21,4 +21,4 @@
 
 ## Version 0.4.2
 
-- reactor a bit
+- refactor a bit
