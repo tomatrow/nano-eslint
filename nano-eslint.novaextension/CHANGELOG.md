@@ -18,3 +18,7 @@
 ## Version 0.4.1
 
 - fix complete absence of warnings
+
+## Version 0.4.2
+
+- reactor a bit

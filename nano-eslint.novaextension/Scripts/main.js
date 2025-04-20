@@ -55,27 +55,40 @@ function getClosestEslintConfig(dirname, eslintConfigFilenames) {
 }
 
 /**
- * @param {string} configpath
  * @param {string} filepath
- * @returns {Promise<LintResult[]>}
+ * @param {{ otherArgs?: string[]; onError?(error: unknown):void }} [config]
+ * @returns {Promise<LintResult[] | undefined>}
  */
-async function lint(configpath, filepath) {
+async function eslint(filepath, { otherArgs = [], onError } = {}) {
 	/** @type {string} */
 	const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
 	/** @type {string} */
 	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
+	const eslintConfigFileNames = (
+		nova.config.get("org.nano-eslint.config_names", "array") ?? []
+	).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
+
+	const configpath = getClosestEslintConfig(nova.path.dirname(filepath), eslintConfigFileNames)
 
 	const cwd = nova.path.dirname(configpath)
-	const args = ["--config", configpath, "--format", "json", filepath]
+	const args = ["--config", configpath, "--format", "json", ...otherArgs, filepath]
 	const options = { args, cwd, shell }
 
-	console.info(`Running Lint Command: '${executablePath} ${args.join(" ")}'`)
-	const result = await runAsync(executablePath, options)
-	console.info("Lint Command Result:", JSON.stringify(result))
+	const command = [executablePath, ...args].join(" ")
+	console.log(command)
 
-	const { stdout } = result
+	const { stdout, code, stderr } = await runAsync(executablePath, options)
 
-	return JSON.parse(stdout)
+	if (stderr) {
+		onError?.(new Error(`'${command}' failed with code '${code}' and stderr '${stderr}'`))
+		return
+	}
+
+	try {
+		return JSON.parse(stdout)
+	} catch (error) {
+		onError?.(error)
+	}
 }
 
 /**
@@ -87,20 +100,10 @@ async function maybeLint(editor) {
 		const filepath = editor.document.path
 		if (!filepath) return []
 
-		const eslintConfigFileNames = (
-			nova.config.get("org.nano-eslint.config_names", "array") ?? []
-		).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
-
-		const configpath = getClosestEslintConfig(
-			nova.path.dirname(filepath),
-			eslintConfigFileNames
-		)
-		if (!configpath) return []
-
-		const lintingResult = await lint(configpath, filepath)
+		const lintingResult = await eslint(filepath, { onError: console.error })
 
 		return (
-			lintingResult[0]?.messages
+			lintingResult?.[0]?.messages
 				.map(message => {
 					const issue = new Issue()
 
@@ -135,24 +138,11 @@ async function maybeFix(editor) {
 	const filepath = editor.document.path
 	if (!filepath) return false
 
-	const eslintConfigFileNames = (
-		nova.config.get("org.nano-eslint.config_names", "array") ?? []
-	).concat(DEFAULT_ESLINT_CONFIG_FILENAMES)
-
-	const configpath = getClosestEslintConfig(nova.path.dirname(filepath), eslintConfigFileNames)
-	if (!configpath) return false
-
-	const executablePath = nova.config.get("org.nano-eslint.eslint_path", "string")
-	const shell = nova.config.get("org.nano-eslint.shell_path", "string")
-	const cwd = nova.path.dirname(configpath)
-
-	const args = ["--config", configpath, filepath, "--fix-dry-run", "--format", "json"]
-	const options = { args, cwd, shell }
-
-	const result = await runAsync(executablePath, options)
-	if (result.stderr) console.error(result.stderr)
-
-	const output = JSON.parse(result.stdout)?.[0]?.output
+	const results = await eslint(filepath, {
+		otherArgs: ["--fix-dry-run"],
+		onError: console.error
+	})
+	const output = results?.[0]?.output
 	if (!output) return false
 
 	const fullRange = new Range(0, editor.document.length)
