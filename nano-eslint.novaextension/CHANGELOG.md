@@ -22,3 +22,7 @@
 ## Version 0.4.2
 
 - refactor a bit
+
+## Version 0.5.0
+
+- avoid linting a file if the config cannot be found
