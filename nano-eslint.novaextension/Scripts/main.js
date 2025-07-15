@@ -101,35 +101,53 @@ async function maybeLint(editor) {
 		const configPath = getClosestEslintConfig(nova.path.dirname(filePath))
 		if (!configPath) return []
 
-		const lintingResult = await eslint(filePath, { configPath, onError: console.error })
+		const lintingResult = await eslint(filePath, {
+			configPath,
+			onError: console.error,
+		})
 
-		return (
-			lintingResult?.[0]?.messages
-				.map(message => {
-					const issue = new Issue()
+		if (!Array.isArray(lintingResult)) return []
 
-					if (message.severity === 0) issue.severity = IssueSeverity.Info
-					else if (message.severity === 1) issue.severity = IssueSeverity.Warning
-					else if (message.severity === 2) issue.severity = IssueSeverity.Error
+		const [firstResult] = lintingResult
+		if (!firstResult || !Array.isArray(firstResult.messages)) return []
 
-					issue.message = message.message
-					issue.line = message.line
-					issue.column = message.column
-					issue.endLine = message.endLine
-					issue.endColumn = message.endColumn
+		return firstResult.messages
+			.map(message => {
+				if (
+					typeof message.message !== "string" ||
+					typeof message.line !== "number" ||
+					typeof message.column !== "number"
+				) {
+					console.warn("[nano-eslint] Skipping malformed ESLint message:", message)
+					return
+				}
 
-					if (
-						issue.severity === IssueSeverity.Warning &&
-						issue.message.match(/^File ignored\b/)
-					)
-						return
+				const issue = new Issue()
+				issue.message = message.message
+				issue.line = message.line
+				issue.column = message.column
 
-					return issue
-				})
-				.filter(Boolean) ?? []
-		)
+				if (typeof message.endLine === "number") issue.endLine = message.endLine
+				if (typeof message.endColumn === "number") issue.endColumn = message.endColumn
+
+				issue.severity =
+					message.severity === 1
+						? IssueSeverity.Warning
+						: message.severity === 2
+						? IssueSeverity.Error
+						: IssueSeverity.Info
+
+				if (
+					issue.severity === IssueSeverity.Warning &&
+					issue.message.match(/^File ignored\b/)
+				)
+					return
+
+				return issue
+			})
+			.filter(Boolean)
 	} catch (error) {
-		console.error(error)
+		console.error("[nano-eslint] maybeLint failed:", error)
 		return []
 	}
 }
