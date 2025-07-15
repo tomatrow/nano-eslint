@@ -26,3 +26,7 @@
 ## Version 0.5.0
 
 - avoid linting a file if the config cannot be found
+
+## Version 0.5.1
+
+- fix Nova crash on malformed ESLint results (@StirStudios)
